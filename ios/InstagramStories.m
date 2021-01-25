@@ -111,14 +111,24 @@ backgroundBottomColor:(NSString *)backgroundBottomColor
     NSString *method = [RCTConvert NSString:options[@"method"]];
     if (method) {
         if([method isEqualToString:@"shareBackgroundImage"]) {
+            NSString *assetUri = [RCTConvert NSString:options[@"backgroundImage"]];
             
-            NSURL *URL = [RCTConvert NSURL:options[@"backgroundImage"]];
-            if (URL == nil) {
-                RCTLogError(@"key 'backgroundImage' missing in options");
-            } else {
-                UIImage *image = [UIImage imageWithData: [NSData dataWithContentsOfURL:URL]];
+            if ([assetUri containsString:@"ph://"]) {
+                NSURL *urlScheme = [NSURL URLWithString:[@"instagram://library?AssetPath="stringByAppendingString:assetUri] ];
                 
-                [self backgroundImage:UIImagePNGRepresentation(image) attributionURL:attrURL];
+                if ([[UIApplication sharedApplication] canOpenURL:urlScheme]) {
+                    [[UIApplication sharedApplication] openURL:urlScheme];
+                } else {
+                    [self fallbackInstagram];
+                }
+            } else {
+                NSURL *URL = [RCTConvert NSURL:options[@"backgroundImage"]];
+                if (URL == nil) {
+                    RCTLogError(@"key 'backgroundImage' missing in options");
+                } else {
+                    UIImage *image = [UIImage imageWithData: [NSData dataWithContentsOfURL:URL]];
+                    [self backgroundImage:UIImagePNGRepresentation(image) attributionURL:attrURL];
+                }
             }
         } else if([method isEqualToString:@"shareStickerImage"]) {
             RCTLog(@"method shareStickerImage");
